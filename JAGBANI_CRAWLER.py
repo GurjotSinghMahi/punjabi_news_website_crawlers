@@ -11,7 +11,7 @@ from urllib.request import urlopen
 '''
 initialize file name for news data management
 '''
-FactSheet = 'C:\\Users\\GURJOT SINGH\\PycharmProjects\\web_scrapper\\data_files\\statistics.xlsx'
+FactSheet = 'C:\\Users\\STANZIN DAWA\\PycharmProjects\\web_scrapper\\data_files\\statistics.xlsx'
 workbook = xlsxwriter.Workbook(FactSheet)
 worksheet1 = workbook.add_worksheet()
 worksheet1.write(0, 0, "Text_File_No")
@@ -22,7 +22,7 @@ worksheet1.write(0, 4, "Unique Words")
 
 
 '''initialze jagbani newspaper URL'''
-html = urlopen("http://jagbani.punjabkesari.in/latest.aspx")
+html = urllib.request.urlopen("http://jagbani.punjabkesari.in/latest.aspx", timeout=30)
 jagbani_pages= []
 
 def initialize():
@@ -87,6 +87,9 @@ def text_extraction(url):
                 worksheet1.write(row, col, time.text)
                 col += 1
             div = particular_news_parser.findAll('div', attrs={'class': 'desc'})
+            '''
+            Location of the filename, where you want to save your data_files
+            '''
             file = "D:\\data_files\\" + filename
             with open(file, 'w', encoding='utf8') as f:
                 for x in div:
