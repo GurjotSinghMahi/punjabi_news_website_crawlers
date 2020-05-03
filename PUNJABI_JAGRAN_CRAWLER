@@ -51,14 +51,18 @@ def get_url_page_paragraph_text(url):
             print(h1_tag.h1.text)
             date_text = h1_tag.span.text
             print(date_text)
-            regex = re.compile(r', ([0-9]+) ([\w]*) ([0-9]+)')
-            month = regex.sub(lambda m: m.group(1), date_text)
-            print(month)
+            # Regular expression group extraction pattern
+            pattern = r', ([0-9]+) ([\w]*) ([0-9]+)'
+            date = re.search(pattern, date_text).group(1)
+            month = re.search(pattern, date_text).group(2)
+            year = re.search(pattern, date_text).group(3)
+            print("Date: ", date, " Month: ", month, " Year: ", year)
 
-
-
-            #text = parser.findAll('div', attrs={'class': 'articleHd'})
-        #print(text)
+            parsed_text = parser.find('div', attrs={'class': 'articleBody'}).findAll(['p', 'span'])
+            news_article = ''
+            for element in parsed_text:
+                news_article += ''.join(element.findAll(text=True))
+        print(news_article)
     except socket.timeout:
         pass
     except URLError:
@@ -98,9 +102,15 @@ def get_page_title_and_link(url):
         pass
 
 def get_page_links(url, genre_name):
-    start=2
-    end = 62
-    jagran_page_link = "https://punjabi.jagran.com/sports-news-punjabi-page"
+    start=2 # Start Page Number
+    end = 62 # Last Page Number in genre
+    '''
+    Genres = agriculture, world, entertainment, education, technology, editorial,
+    nri, business, religion, national
+    '''
+    genre = "sports" # Change the genre over here from the presentend list
+    website_url = "https://punjabi.jagran.com/"
+    jagran_page_link = website_url + genre +"-news-punjabi-page"
     for i in range(start, end):
         link = jagran_page_link + str(i) + ".html"
         get_page_title_and_link(link)
