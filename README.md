@@ -1,7 +1,9 @@
 # punjabi_news_website_crawlers
 
-This project contain three Python file for creating the Punjabi News Corpus by crawling three respective
-Punjabi News websites, i.e. punjabitribuneonline.com, punjabijagran.com, and jagbani.punjabkesari.in
+**This project contain three Python file for creating the Punjabi News Corpus by crawling three respective
+Punjabi News websites, i.e. <a href="http://punjabitribuneonline.com">punjabitribuneonline.com</a>,
+ <a href="http://punjabijagran.com">punjabijagran.com</a>, and <a href="http://jagbani.punjabkesari.in">
+ jagbani.punjabkesari.in</a>**
 
 ---
 
