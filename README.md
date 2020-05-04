@@ -8,6 +8,6 @@ Punjabi News websites, i.e. <a href="http://punjabitribuneonline.com" target="_b
 ---
 
 ## License
-[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
-- **[MIT license](http://opensource.org/licenses/mit-license.php)**
-- Copyright 2020 ©
+[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](https://github.com/GurjotSinghMahi/punjabi_news_website_crawlers/blob/master/mit_licence.txt)
+- **[MIT license](https://github.com/GurjotSinghMahi/punjabi_news_website_crawlers/blob/master/mit_licence.txt)**
+- Copyright 2020 © Gurjot Singh Mahi
