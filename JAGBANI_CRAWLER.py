@@ -11,7 +11,7 @@ from urllib.request import urlopen
 '''
 initialize file name for news data management
 '''
-FactSheet = 'C:\\Users\\STANZIN DAWA\\PycharmProjects\\web_scrapper\\data_files\\statistics.xlsx'
+FactSheet = 'C:\\Users\\PycharmProjects\\web_scrapper\\data_files\\statistics.xlsx'
 workbook = xlsxwriter.Workbook(FactSheet)
 worksheet1 = workbook.add_worksheet()
 worksheet1.write(0, 0, "Text_File_No")
