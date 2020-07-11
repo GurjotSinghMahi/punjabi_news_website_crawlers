@@ -2,15 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import re
+import os
 import xlsxwriter
+import socket
 import urllib.request
 from bs4 import BeautifulSoup
 from urllib.parse import quote
-from urllib.request import urlopen
+from urllib.request import urlopen, Request, URLError
 
 '''
 initialize file name for news data management
-'''
+
 FactSheet = 'C:\\Users\\PycharmProjects\\web_scrapper\\data_files\\statistics.xlsx'
 workbook = xlsxwriter.Workbook(FactSheet)
 worksheet1 = workbook.add_worksheet()
@@ -19,11 +21,41 @@ worksheet1.write(0, 1, "Title")
 worksheet1.write(0, 2, "Genre")
 worksheet1.write(0, 3, "Time")
 worksheet1.write(0, 4, "Unique Words")
-
+'''
 
 '''initialze jagbani newspaper URL'''
-html = urllib.request.urlopen("http://jagbani.punjabkesari.in/latest.aspx", timeout=30)
+#html = urllib.request.urlopen("https://jagbani.punjabkesari.in/", timeout=30)
 jagbani_pages= []
+req = Request('https://jagbani.punjabkesari.in/', headers={'User-Agent': 'Mozilla/5.0'})
+try:
+    req.selector.encode('ascii')
+except UnicodeEncodeError:
+    req.selector = quote(req.selector)
+try:
+    response = urllib.request.urlopen(req, timeout=30)
+    html = response.read().decode('utf-8')
+except socket.timeout:
+    pass
+except URLError:
+    pass
+
+workbook = ''
+def make_directory(FolderName):
+    path = r'F:\jagbani Corpus\\' + FolderName
+    if not os.path.exists(path):
+        os.makedirs(path)
+def create_excel_sheet(FolderName):
+    FactSheet = r'F:\jagbani Corpus\\' + FolderName + '\\' + FolderName + '_STATS.xlsx'
+    global workbook
+    workbook = xlsxwriter.Workbook(FactSheet)
+    global worksheet1
+    worksheet1 = workbook.add_worksheet()
+    worksheet1.write(0, 0, "Text_File_No")
+    worksheet1.write(0, 1, "Title")
+    worksheet1.write(0, 2, "Genre")
+    worksheet1.write(0, 3, "Month")
+    worksheet1.write(0, 4, "Date")
+    worksheet1.write(0, 5, "Year")
 
 def initialize():
     if html is None:
@@ -99,9 +131,23 @@ def text_extraction(url):
             row += 1
             allurls = []
 
+def get_page_links(url, genre_name, start_num, end_num):
+    website_url = "https://punjabi.jagran.com/"
+    jagran_page_link = website_url + genre_name +"-news-punjabi-page"
+    for i in range(start_num, end_num):
+        link = jagran_page_link + str(i) + ".html"
+        get_page_title_and_link(link, genre_name)
+        print(link)
+
+
+
 def main():
-    initialize()
+    make_directory("sports")
+    create_excel_sheet("sports")
+    #initialize()
+    get_page_links(link, genre, start, end)
     for url in jagbani_pages:
+        print("URL: ", url)
         text_extraction(url)
     workbook.close()
 
