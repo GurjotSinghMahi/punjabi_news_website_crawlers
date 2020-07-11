@@ -160,7 +160,7 @@ def main():
         nri, business, religion, national
     '''
     start = 2  # Start Page Number
-    end = 6  # Last Page Number in genre 62
+    end = 62  # Last Page Number in genre
     link = "https://punjabi.jagran.com/sports-news-punjabi.html"
     genre = "sports" # Change the genre over here from the presentend list
     make_directory(genre)
