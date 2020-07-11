@@ -101,17 +101,10 @@ def get_page_title_and_link(url):
     except socket.error:
         pass
 
-def get_page_links(url, genre_name):
-    start=2 # Start Page Number
-    end = 62 # Last Page Number in genre
-    '''
-    Genres = agriculture, world, entertainment, education, technology, editorial,
-    nri, business, religion, national
-    '''
-    genre = "sports" # Change the genre over here from the presentend list
+def get_page_links(url, genre_name, start_num, end_num):
     website_url = "https://punjabi.jagran.com/"
-    jagran_page_link = website_url + genre +"-news-punjabi-page"
-    for i in range(start, end):
+    jagran_page_link = website_url + genre_name +"-news-punjabi-page"
+    for i in range(start_num, end_num):
         link = jagran_page_link + str(i) + ".html"
         get_page_title_and_link(link)
         #print(link)
@@ -119,7 +112,15 @@ def get_page_links(url, genre_name):
 def main():
     # make_directory(folder)
     # create_excel_sheet("sports")
-    get_page_links("https://punjabi.jagran.com/sports-news-punjabi.html", "sports")
+    '''
+        Genres = agriculture, world, entertainment, education, technology, editorial,
+        nri, business, religion, national
+    '''
+    start = 2  # Start Page Number
+    end = 62  # Last Page Number in genre
+    link = "https://punjabi.jagran.com/sports-news-punjabi.html"
+    genre = "sports" # Change the genre over here from the presentend list
+    get_page_links(link, genre, start, end)
 
 if __name__ == '__main__':
     main()
