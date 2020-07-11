@@ -11,7 +11,7 @@ from urllib.parse import quote
 from urllib.request import urlopen
 from urllib.request import Request, URLError
 
-'''Initialize Punjabi Tribune newspaper URL'''
+'''Initialize Punjabi Jagran newspaper URL'''
 req = Request('https://punjabi.jagran.com/', headers={'User-Agent': 'Mozilla/5.0'})
 try:
     req.selector.encode('ascii')
@@ -31,13 +31,32 @@ row = 1
 col = 0
 file_number = 0
 
-def get_url_page_paragraph_text(url):
+def make_directory(FolderName):
+    path = r'F:\Punjabi Jagran Corpus\\' + FolderName
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+def create_excel_sheet(FolderName):
+    FactSheet = r'F:\Punjabi Jagran Corpus\\' + FolderName + '\\' + FolderName + '_STATS.xlsx'
+    global workbook
+    workbook = xlsxwriter.Workbook(FactSheet)
+    global worksheet1
+    worksheet1 = workbook.add_worksheet()
+    worksheet1.write(0, 0, "Text_File_No")
+    worksheet1.write(0, 1, "Title")
+    worksheet1.write(0, 2, "Genre")
+    worksheet1.write(0, 3, "Month")
+    worksheet1.write(0, 4, "Date")
+    worksheet1.write(0, 5, "Year")
+
+def get_url_page_paragraph_text(url, genre, filenumber):
     '''
     Function generates the paragaph text from the News URL provided
     as the parameter
     :param url: URL of the page
     :return:
     '''
+    global file_number
     genre_page = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     try:
         genre_page.selector.encode('ascii')
@@ -48,7 +67,8 @@ def get_url_page_paragraph_text(url):
         page = page_response.read().decode('utf-8')
         parser = BeautifulSoup(page, "html.parser")
         for h1_tag in parser.findAll('div', attrs={'class': 'articleHd'}):
-            print(h1_tag.h1.text)
+            #print(h1_tag.h1.text)
+            title = str(h1_tag.h1.text)
             date_text = h1_tag.span.text
             print(date_text)
             # Regular expression group extraction pattern
@@ -63,6 +83,27 @@ def get_url_page_paragraph_text(url):
             for element in parsed_text:
                 news_article += ''.join(element.findAll(text=True))
         print(news_article)
+        filename = "text_" + str(filenumber) + ".txt"
+        path = r'F:\Punjabi Jagran Corpus\\' + genre + '\\' + filename
+        global row, col
+        global worksheet1
+        worksheet1.write(row, col, filename)
+        col += 1
+        worksheet1.write(row, col, title)
+        col += 1
+        worksheet1.write(row, col, genre)
+        col += 1
+        worksheet1.write(row, col, month)
+        col += 1
+        worksheet1.write(row, col, int(date))
+        col += 1
+        worksheet1.write(row, col, int(year))
+        col += 1
+        print(title)
+        with open(path, 'w', encoding='utf8') as f:
+            f.write(news_article)
+        row += 1
+        col = 0
     except socket.timeout:
         pass
     except URLError:
@@ -71,7 +112,7 @@ def get_url_page_paragraph_text(url):
         pass
 
 
-def get_page_title_and_link(url):
+def get_page_title_and_link(url, genre):
     '''
     This function extracts the page title and URL to the news
     item and send the URL to the get_url_page_paragraph_text function
@@ -90,10 +131,12 @@ def get_page_title_and_link(url):
         page = page_response.read().decode('utf-8')
         parser = BeautifulSoup(page, "html.parser")
         for ul in parser.findAll('ul', attrs={'class': 'topicList'}):
-            extension = ul.find('a')['href']
-            page_url = "https://punjabi.jagran.com" + extension
-            print(page_url)
-            get_url_page_paragraph_text(page_url)
+            for li in ul.find_all('li'):
+                a = li.find('a')
+                print(a['href'])
+                page_url = "https://punjabi.jagran.com" + a['href']
+                get_url_page_paragraph_text(page_url, genre, file_number)
+                file_number += 1
     except socket.timeout:
         pass
     except URLError:
@@ -106,8 +149,8 @@ def get_page_links(url, genre_name, start_num, end_num):
     jagran_page_link = website_url + genre_name +"-news-punjabi-page"
     for i in range(start_num, end_num):
         link = jagran_page_link + str(i) + ".html"
-        get_page_title_and_link(link)
-        #print(link)
+        get_page_title_and_link(link, genre_name)
+        print(link)
 
 def main():
     # make_directory(folder)
@@ -117,10 +160,13 @@ def main():
         nri, business, religion, national
     '''
     start = 2  # Start Page Number
-    end = 62  # Last Page Number in genre
+    end = 6  # Last Page Number in genre 62
     link = "https://punjabi.jagran.com/sports-news-punjabi.html"
     genre = "sports" # Change the genre over here from the presentend list
+    make_directory(genre)
+    create_excel_sheet(genre)
     get_page_links(link, genre, start, end)
+    workbook.close()
 
 if __name__ == '__main__':
     main()
