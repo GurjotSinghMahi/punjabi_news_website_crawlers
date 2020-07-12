@@ -11,36 +11,6 @@ from urllib.parse import quote
 from urllib.request import urlopen, Request, URLError
 
 
-'''
-initialize file name for news data management
-
-FactSheet = 'C:\\Users\\PycharmProjects\\web_scrapper\\data_files\\statistics.xlsx'
-workbook = xlsxwriter.Workbook(FactSheet)
-worksheet1 = workbook.add_worksheet()
-worksheet1.write(0, 0, "Text_File_No")
-worksheet1.write(0, 1, "Title")
-worksheet1.write(0, 2, "Genre")
-worksheet1.write(0, 3, "Time")
-worksheet1.write(0, 4, "Unique Words")
-'''
-
-'''initialze jagbani newspaper URL'''
-#html = urllib.request.urlopen("https://jagbani.punjabkesari.in/", timeout=30)
-jagbani_pages= []
-req = Request('https://jagbani.punjabkesari.in/', headers={'User-Agent': 'Mozilla/5.0'})
-try:
-    req.selector.encode('ascii')
-except UnicodeEncodeError:
-    req.selector = quote(req.selector)
-try:
-    response = urllib.request.urlopen(req, timeout=30)
-    html = response.read().decode('utf-8')
-except socket.timeout:
-    pass
-except URLError:
-    pass
-
-
 def make_directory(FolderName):
     path = r'F:\jagbani Corpus\\' + str(FolderName)
     if not os.path.exists(path):
@@ -83,7 +53,7 @@ def text_extraction(url, genre, filenumber):
     date = re.search(pattern, date_text).group(1)
     month = re.search(pattern, date_text).group(2)
     year = re.search(pattern, date_text).group(3)
-    print("Date: ", date, " Month: ", month, " Year: ", year)
+    #print("Date: ", date, " Month: ", month, " Year: ", year)
     tags = ['center', 'strong', 'a','ul','div']
     para = parser.find('div', attrs={'id': 'ContentPlaceHolder1_dv_main_news_detail'})
     for t in tags:
@@ -92,7 +62,7 @@ def text_extraction(url, genre, filenumber):
     for el in para.find_all():
         para_text += ''.join(el.text)
     result = re.sub(r"ਇਹ ਵੀ ਪੜ੍ਹੋ:", "", para_text, 0, re.MULTILINE)
-    print(result)
+    #print(result)
     filename = "text_" + str(filenumber) + ".txt"
     path = r'F:\jagbani Corpus\\' + genre + '\\' + filename
     global row, col
@@ -132,7 +102,7 @@ def get_page_links(url, genre_name):
         for ul in parser.findAll('ul', attrs={'id': 'ContentPlaceHolder1_dv_section_middle'}):
             for li in ul.find_all('h3'):
                 a = li.find('a')
-                print(a['href'])
+                #print(a['href'])
                 text_extraction(a['href'], genre_name, file_number)
                 file_number += 1
     except socket.timeout:
