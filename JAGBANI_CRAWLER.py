@@ -57,7 +57,7 @@ def text_extraction(url, genre, filenumber):
     date = re.search(pattern, date_text).group(1)
     month = re.search(pattern, date_text).group(2)
     year = re.search(pattern, date_text).group(3)
-    #print("Date: ", date, " Month: ", month, " Year: ", year)
+    # print("Date: ", date, " Month: ", month, " Year: ", year)
     tags = ['center', 'strong', 'a','ul','div']
     para = parser.find('div', attrs={'id': 'ContentPlaceHolder1_dv_main_news_detail'})
     for t in tags:
@@ -110,7 +110,6 @@ def get_page_links(url, genre_name, cat, end):
     except UnicodeEncodeError:
         genre_page.selector = quote(genre_page.selector)
     try:
-        flag = 1
         page_response = urllib.request.urlopen(genre_page, timeout=30)
         page = page_response.read().decode('utf-8')
         parser = BeautifulSoup(page, "html.parser")
@@ -120,7 +119,6 @@ def get_page_links(url, genre_name, cat, end):
                 #print(a['href'])
                 text_extraction(a['href'], genre_name, file_number)
                 file_number += 1
-        flag -= 1
         #print("getting into this ")
         for i in range(2, end+1):
             content = api_content_extraction('https://jagbani.punjabkesari.in/punjab', cat, i)
