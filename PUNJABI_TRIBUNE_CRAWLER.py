@@ -10,25 +10,12 @@ from bs4 import BeautifulSoup
 from urllib.parse import quote
 from urllib.request import urlopen
 from urllib.request import Request, URLError
+import requests
 
-'''Initialize Punjabi Tribune newspaper URL'''
-req = Request('http://punjabitribuneonline.com/', headers={'User-Agent': 'Mozilla/5.0'})
-try:
-    req.selector.encode('ascii')
-except UnicodeEncodeError:
-    req.selector = quote(req.selector)
-
-try:
-    response = urllib.request.urlopen(req, timeout=30)
-    html = response.read().decode('utf-8')
-except socket.timeout:
-    pass
-except URLError:
-    pass
-punjabi_tribune_genre_dictionary = {}
 workbook = ''
 row = 1
 col = 0
+file_number = 0
 
 def make_directory(FolderName):
     path = r'F:\Punjabi Tribune Corpus\\' + FolderName
@@ -48,222 +35,166 @@ def create_excel_sheet(FolderName):
     worksheet1.write(0, 4, "Date")
     worksheet1.write(0, 5, "Year")
 
-def news_genre_links():
-    '''
-    This function generate the Punjabi Tribune URL links and Genres
-    and append it in the punjabi_tribune_genre_dictionary
-    :return: NONE
-    '''
-    if html is None:
-        print("URL is not found")
-    else:
-        '''
-        This parts extracts all the link for in Punjabi Tribune website pages    
-        '''
-        bsObj = BeautifulSoup(html, "html.parser")
-        div = bsObj.findAll('div', attrs={'class': 'dnk_nav'})
-        for genres in div:
-            links = genres.find_all('a')
-            for link in links:
-                punjabi_tribune_genre_dictionary[link.text] = link['href']
-
-def get_url_page_paragraph_text(url, filenumber, FolderName, title):
+def get_url_page_paragraph_text(url, filenumber, FolderName):
     '''
     Function generates the paragaph text from the News URL provided
     as the parameter
     :param url: URL of the page
     :return:
     '''
-    genre_page = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    try:
-        genre_page.selector.encode('ascii')
-    except UnicodeEncodeError:
-        genre_page.selector = quote(genre_page.selector)
-    try:
-        page_response = urllib.request.urlopen(genre_page, timeout=30)
-        page = page_response.read().decode('utf-8')
-        parser = BeautifulSoup(page, "html.parser")
-        div = parser.find('div', attrs={'class': 'font_styl'}).findAll('p')
-        span = parser.find('span', attrs={'class': 'clock'})
-        date_text = span.text
-        regex = re.compile(r'.* .* ([^\/]*) - ([^\/]*) - ([^\/]*)')
-        month = regex.sub(lambda m: m.group(1), date_text)
-        date = regex.sub(lambda m: m.group(2), date_text)
-        year = regex.sub(lambda m: m.group(3), date_text)
-        article_text = ''
-        for element in div:
-            article_text += '\n' + ''.join(element.findAll(text=True))
-        filename = "text_" + str(filenumber) + ".txt"
-        path = r'F:\Punjabi Tribune Corpus\\' + FolderName + '\\' + filename
-        global row, col
-        global worksheet1
-        worksheet1.write(row, col, filename)
-        col += 1
-        worksheet1.write(row, col, title)
-        col += 1
-        worksheet1.write(row, col, FolderName)
-        col += 1
-        worksheet1.write(row, col, month)
-        col += 1
-        worksheet1.write(row, col, int(date))
-        col += 1
-        worksheet1.write(row, col, int(year))
-        col += 1
-        print(title)
-        with open(path, 'w', encoding='utf8') as f:
-            f.write(article_text)
-        row += 1
-        col = 0
-    except socket.timeout:
-        pass
-    except URLError:
-        pass
-    except socket.error:
-        pass
-
-
-file_number = 0
-def get_page_title_and_link(url, FolderName):
-    '''
-    This function extracts the page title and URL to the news
-    item and send the URL to the get_url_page_paragraph_text function
-    to extract the paragraph text
-
-    :param url: Page URL
-    '''
-    global file_number
-    genre_page = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    try:
-        genre_page.selector.encode('ascii')
-    except UnicodeEncodeError:
-        genre_page.selector = quote(genre_page.selector)
-    try:
-        page_response = urllib.request.urlopen(genre_page, timeout=30)
-        page = page_response.read().decode('utf-8')
-        parser = BeautifulSoup(page, "html.parser")
-        div = parser.findAll('div', attrs={'class': 'taja_khabar width685'})
-        for genres in div:
-            links = genres.find_all('a')
-            for link in links[:1]:
-                title = link.text
-                # print(link.text)
-                page_url = link['href']
-                # print(page_url)
-                get_url_page_paragraph_text(page_url, file_number, FolderName, title)
-                file_number += 1
-    except socket.timeout:
-        pass
-    except URLError:
-        pass
-    except socket.error:
-        pass
-
-def get_page_links(url, genre_name):
-    page_link = []
-    #print("gurjot",url)
-    genre_page = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    try:
-        genre_page.selector.encode('ascii')
-    except UnicodeEncodeError:
-        genre_page.selector = quote(genre_page.selector)
-    try:
-        page_response = urllib.request.urlopen(genre_page, timeout=30)
-        page1 = page_response.read().decode('utf-8')
-        parser = BeautifulSoup(page1, "html.parser")
-        # print(parser)
-        div = parser.find('span', attrs={'class': "pages"})
-        # print(div)
-        page_numbering = div.text
-        regex = re.compile(r'.* ([^\/]*) .* ([^\/]*)')
-        start = regex.sub(lambda m: m.group(1), page_numbering)
-        end = regex.sub(lambda m: m.group(2), page_numbering)
-        regex = re.compile(r'([^\/]*),([^\/]*)')
-        end = regex.sub(lambda m: m.group(1) + m.group(2), end)
-        # print(start, end)
-        div = parser.findAll('div', attrs={'class': 'wp-pagenavi'})
-        for genres in div:
-            links = genres.find_all('a')
-            for link in links[:1]:
-                all_pages = re.compile(r'([^\/]*)\/\d')
-                start_link = all_pages.sub(lambda m: m.group(1), link['href'])
-                page_link.append(start_link)
-        # print(url)
-        get_page_title_and_link(url, genre_name)
-        start = int(start) + 1
-        end = int(end) + 1
-
-        for i in range(start, end):
-            if len(page_link) != 0:
-                url = page_link[0] + str(i)
-                get_page_title_and_link(url, genre_name)
-            else:
-                pass
-    except socket.timeout:
-        pass
-    except URLError:
-        pass
-    except socket.error:
-        pass
-
-def main():
-    '''
-    The main set the news_genre_links on go to extract the
-    links and genres from main page of Punjabi Tribune
-
-    It generates the dictionary of Punjabi news genres corresponding to
-    its main URL
-    example:
-        'ਮੁੱਖ ਸਫ਼ਾ': 'http://punjabitribuneonline.com/category/%e0%a8%ae%e0%a9%81%e0%a9%b1%e0%a8%96-%e0%a8%b8%e0%a9%9e%e0%a8%be/'
-
-    This further send the links and genres text to get_page_links
-    to extract the pages links from corresponding genre links
-    :return: NONE
-    '''
-    news_genre_links()
-    path = r'F:\Punjabi Tribune Corpus\extracted_corpus.xlsx'
-    workbook1 = xlsxwriter.Workbook(path)
-    sheet1 = workbook1.add_worksheet()
-    sheet1_row = 0
-    sheet1_col = 0
-    for folder in punjabi_tribune_genre_dictionary:
-        make_directory(folder)
-        file_name = folder + '_STATS.xlsx'
-        sheet1.write(sheet1_row, sheet1_col, folder)
-        sheet1_col += 1
-        sheet1.write(sheet1_row, sheet1_col, file_name)
-        sheet1_col += 1
-        sheet1_row += 1
-        sheet1_col = 0
-    workbook1.close()
-
-    global file_number
+    #print(url)
+    html = urlopen(url)
+    parser = BeautifulSoup(html, features="html.parser")
+    title = parser.find('div', attrs={'class': 'glb-heading'}).h1.get_text()
+    #print(title)
+    date_text = parser.find('div', attrs={'class': 'time-share'}).span.get_text()
+    #print(date_text)
+    pattern = r"([a-zA-z]+) ([0-9]+), ([0-9]+)"
+    month = re.search(pattern, date_text).group(1)
+    date = re.search(pattern, date_text).group(2)
+    year = re.search(pattern, date_text).group(3)
+    #print("Date: ", date, " Month: ", month, " Year: ", year)
+    para = parser.find('div', attrs={'class': 'story-desc'})
+    para_text = ''
+    tags = ['strong', 'b']
+    for t in tags:
+        [s.extract() for s in para(t)]
+    for el in para.find_all():
+        para_text += ''.join(el.text)
+    #print(para_text)
+    filename = "text_" + str(filenumber) + ".txt"
+    path = r'F:\Punjabi Tribune Corpus\\' + FolderName + '\\' + filename
     global row, col
-    for page in punjabi_tribune_genre_dictionary:
-        print(page, "Data Extraction Started")
-        create_excel_sheet(page)
-        get_page_links(punjabi_tribune_genre_dictionary[page], page)
-        file_number = 0
-        workbook.close()
-        row = 1
-        col = 0
-        print(page, "Data Extraction completed")
+    global worksheet1
+    worksheet1.write(row, col, filename)
+    col += 1
+    worksheet1.write(row, col, title)
+    col += 1
+    worksheet1.write(row, col, FolderName)
+    col += 1
+    worksheet1.write(row, col, month)
+    col += 1
+    worksheet1.write(row, col, int(date))
+    col += 1
+    worksheet1.write(row, col, int(year))
+    col += 1
+    print(title)
+    with open(path, 'w', encoding='utf8') as f:
+        f.write(para_text)
+    row += 1
+    col = 0
+
+def extract_links(url_1, id, genre):
+    global file_number
+    topNews = '9193,9013,9015,9049,9042'
+    under_score = 1594805443439
+    url = 'https://www.punjabitribuneonline.com/Pagination/ViewAll?id=' + str(id) + "&page=" + str(page) # + "&topNews=" + topNews + "&_=" + str(under_score)
+    headers = {'content-type': 'text/html', 'accept': '*/*'}
+    r = requests.get(url, headers=headers)
+    parser = BeautifulSoup(r.text, features="html.parser")
+    soup = parser.findAll('a', attrs={'class': "card-top-align"}, href=True)
+    for result in soup:
+        page_url = url_1+result['href']
+        #print(page_url)
+        get_url_page_paragraph_text(page_url, file_number, genre)
+        file_number += 1
+
+def get_last_page_number(genre):
+    url = 'https://www.punjabitribuneonline.com/news/' + genre
+    html = urlopen(url)
+    parser = BeautifulSoup(html, features="html.parser")
+    regex = r"totalPages: ([0-9]+),"
+    #print(parser)
+    last_page = re.search(regex, str(parser)).group(1)
+    return last_page
 
 if __name__ == '__main__':
-    main()
-    '''
-    create_excel_sheet('ਹਫਤਾਵਾਰੀ')
-    get_page_links('http://punjabitribuneonline.com/category/%e0%a8%b9%e0%a8%ab%e0%a8%a4%e0%a8%be%e0%a8%b5%e0%a8%be%e0%a8%b0%e0%a9%80/', 'ਹਫਤਾਵਾਰੀ')
-    file_number = 0
-    workbook.close()
-    row = 1
-    col = 0
-    create_excel_sheet('ਵਿਸਰਿਆ ਵਿਰਸਾ')
-    get_page_links('http://punjabitribuneonline.com/category/%e0%a8%b5%e0%a8%bf%e0%a8%b8%e0%a8%b0%e0%a8%bf%e0%a8%86-%e0%a8%b5%e0%a8%bf%e0%a8%b0%e0%a8%b8%e0%a8%be/', 'ਵਿਸਰਿਆ ਵਿਰਸਾ')
-    file_number = 0
-    workbook.close()
-    row = 1
-    col = 0
-    '''
-
-
+    while (True):
+        print("Select Genre Number You want to extract (Each Page extract 18 news Articles): ")
+        print("1. National\n2. World\n3. Sports\n4. Business"
+              "\n5. Agriculture\n6. Features\n0. Exit Window ")
+        user_input = input()
+        user_input = int(user_input)
+        if (user_input == 1):
+            print("Data Extraction Started")
+            genre = "nation"
+            make_directory(genre)
+            create_excel_sheet(genre)
+            url = 'https://www.punjabitribuneonline.com'
+            id = 42
+            page = get_last_page_number(genre)
+            for i in range(1, int(page) + 1):
+                extract_links(url, id, genre)
+            workbook.close()
+            print("Data Extraction completed")
+            exit()
+        elif (user_input == 2):
+            print("Data Extraction Started")
+            genre = "world"
+            make_directory(genre)
+            create_excel_sheet(genre)
+            url = 'https://www.punjabitribuneonline.com'
+            id = 57
+            page = get_last_page_number(genre)
+            for i in range(1, int(page) + 1):
+                extract_links(url, id, genre)
+            workbook.close()
+            print("Data Extraction completed")
+            exit()
+        elif (user_input == 3):
+            print("Data Extraction Started")
+            genre = "sports"
+            make_directory(genre)
+            create_excel_sheet(genre)
+            url = 'https://www.punjabitribuneonline.com'
+            id = 50
+            page = get_last_page_number(genre)
+            for i in range(1, int(page) + 1):
+                extract_links(url, id, genre)
+            workbook.close()
+            print("Data Extraction completed")
+            exit()
+        elif (user_input == 4):
+            print("Data Extraction Started")
+            genre = "business"
+            make_directory(genre)
+            create_excel_sheet(genre)
+            url = 'https://www.punjabitribuneonline.com'
+            id = 0
+            page = get_last_page_number(genre)
+            for i in range(1, int(page) + 1):
+                extract_links(url, id, genre)
+            workbook.close()
+            print("Data Extraction completed")
+            exit()
+        elif (user_input == 5):
+            print("Data Extraction Started")
+            genre = "agriculture"
+            make_directory(genre)
+            create_excel_sheet(genre)
+            url = 'https://www.punjabitribuneonline.com'
+            id = 279
+            page = get_last_page_number(genre)
+            for i in range(1, int(page) + 1):
+                extract_links(url, id, genre)
+            workbook.close()
+            print("Data Extraction completed")
+            exit()
+        elif (user_input == 6):
+            print("Data Extraction Started")
+            genre = "features"
+            make_directory(genre)
+            create_excel_sheet(genre)
+            url = 'https://www.punjabitribuneonline.com'
+            id = 26
+            page = get_last_page_number(genre)
+            for i in range(1, int(page) + 1):
+                extract_links(url, id, genre)
+            workbook.close()
+            print("Data Extraction completed")
+            exit()
+        elif (user_input == 0):
+            exit()
+        else:
+            print("Enter right Value")
 
